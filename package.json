@@ -1,0 +1,12 @@
+{
+  "name": "controle-atendimentos-mari",
+  "version": "1.0.0",
+  "description": "Controle de atendimentos fisioterapia",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
