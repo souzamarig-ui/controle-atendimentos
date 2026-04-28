@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Controle de Atendimentos · Mari</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#080e1a;color:#e2e8f0;font-family:'DM Sans',system-ui,sans-serif;min-height:100vh;padding-bottom:60px;}
+  input,button{font-family:'DM Sans',sans-serif;}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#334155;border-radius:2px}
+
+  /* Header */
+  .header{background:linear-gradient(135deg,#0f1c2e 0%,#0a1628 100%);border-bottom:1px solid #1e3a5f;padding:20px 20px 0;}
+  .header-inner{max-width:900px;margin:0 auto;}
+  .header-top{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+  .header-title{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:#7dd3fc;}
+  .header-sub{font-size:12px;color:#64748b;margin-top:2px;}
+  .tabs{display:flex;gap:4px;margin-top:16px;}
+  .tab{background:transparent;color:#64748b;border:none;border-bottom:2px solid transparent;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:600;border-radius:4px 4px 0 0;transition:all .2s;}
+  .tab:hover{background:#1e2d40;}
+  .tab.active{background:#1e3a5f;color:#7dd3fc;border-bottom:2px solid #38bdf8;}
+
+  /* Main */
+  .main{max-width:900px;margin:0 auto;padding:20px 16px;}
+
+  /* Month nav */
+  .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+  .month-btn{background:#1e293b;border:1px solid #334155;color:#94a3b8;width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:18px;line-height:1;}
+  .month-label{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:#e2e8f0;}
+
+  /* Patient chips */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .chip{border-radius:20px;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;border:1px solid #334155;background:#1e293b;color:#94a3b8;}
+  .chip:hover{filter:brightness(1.2);}
+  .chip.all-active{background:#1e3a5f;border-color:#38bdf8;color:#7dd3fc;}
+
+  /* Calendar */
+  .day-headers{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;}
+  .day-header{text-align:center;font-size:11px;color:#475569;padding:4px 0;font-weight:700;}
+  .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .day-cell{background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:8px 6px;min-height:80px;transition:background .15s;}
+  .day-cell:hover{background:#1e293b;}
+  .day-cell.today{background:#0f2744;border-color:#1d4ed8;}
+  .day-num{font-size:12px;font-weight:500;color:#64748b;margin-bottom:6px;}
+  .day-num.today-num{color:#60a5fa;font-weight:700;}
+  .today-badge{margin-left:4px;font-size:9px;background:#1d4ed8;color:#fff;border-radius:4px;padding:1px 4px;}
+  .status-btn{width:100%;border-radius:5px;padding:3px 5px;font-size:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s;text-align:left;margin-bottom:3px;border-left-width:3px;border-left-style:solid;}
+  .status-btn:hover{filter:brightness(1.3);transform:scale(1.05);}
+
+  /* Legend */
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;padding:12px 16px;background:#0f172a;border-radius:10px;border:1px solid #1e293b;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#64748b;}
+
+  /* Summary */
+  .summary-card{background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:20px;margin-bottom:16px;}
+  .summary-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+  .summary-name{font-size:16px;font-weight:700;margin-bottom:4px;}
+  .summary-period{font-size:12px;color:#475569;}
+  .summary-count{font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:#4ade80;}
+  .summary-count-label{font-size:11px;color:#64748b;text-align:right;}
+  .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+  .summary-stat{border-radius:8px;padding:10px 8px;text-align:center;}
+  .summary-stat-icon{font-size:18px;margin-bottom:2px;}
+  .summary-stat-num{font-size:20px;font-weight:700;}
+  .summary-stat-label{font-size:9px;color:#475569;margin-top:2px;}
+  .days-realizados{background:#052e16;border:1px solid #166534;border-radius:8px;padding:12px;}
+  .days-realizados-title{font-size:11px;color:#4ade80;font-weight:700;margin-bottom:8px;}
+  .day-badge{background:#166534;color:#4ade80;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block;margin:2px;}
+  .empty-msg{font-size:12px;color:#334155;text-align:center;}
+
+  /* Patients */
+  .add-patient-box{background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:20px;margin-bottom:16px;}
+  .add-patient-title{font-size:14px;color:#7dd3fc;font-weight:700;margin-bottom:14px;}
+  .add-patient-row{display:flex;gap:10px;}
+  .text-input{flex:1;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px 14px;color:#e2e8f0;font-size:14px;outline:none;}
+  .text-input:focus{border-color:#38bdf8;}
+  .btn-primary{background:#1d4ed8;border:none;color:#fff;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;}
+  .patient-row{background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .patient-name{font-size:15px;font-weight:600;}
+  .patient-actions{display:flex;gap:8px;margin-left:12px;flex-shrink:0;}
+  .btn-edit{background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;}
+  .btn-del{background:#2d0a0a;border:1px solid #7f1d1d;color:#f87171;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;}
+
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+  .modal{background:#0f1c2e;border:1px solid #1e3a5f;border-radius:16px;padding:24px;width:100%;max-width:360px;}
+  .modal-patient{font-family:'Fraunces',serif;color:#7dd3fc;font-size:18px;margin-bottom:4px;}
+  .modal-date{color:#475569;font-size:13px;margin-bottom:20px;}
+  .status-opt{width:100%;background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:12px 16px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;font-size:14px;font-weight:500;margin-bottom:8px;}
+  .status-opt:hover{filter:brightness(1.2);transform:translateX(4px);}
+  .status-opt.current{font-weight:700;}
+  .status-opt-icon{font-size:18px;width:24px;text-align:center;}
+  .current-badge{margin-left:auto;font-size:12px;}
+  .btn-clear{width:100%;background:transparent;border:1px dashed #334155;color:#475569;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;margin-top:4px;}
+  .btn-close{width:100%;background:transparent;border:none;color:#475569;cursor:pointer;font-size:13px;padding:8px;margin-top:16px;}
+
+  /* Loading */
+  .loading{display:flex;align-items:center;justify-content:center;height:200px;color:#475569;font-size:14px;}
+
+  /* Saving indicator */
+  .saving{position:fixed;bottom:20px;right:20px;background:#1e3a5f;border:1px solid #38bdf8;color:#7dd3fc;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;z-index:999;transition:opacity .3s;}
+
+  @media(max-width:480px){
+    .summary-grid{grid-template-columns:repeat(2,1fr);}
+    .day-cell{min-height:60px;padding:5px 3px;}
+    .status-btn{font-size:9px;padding:2px 3px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <span style="font-size:28px">🩺</span>
+      <div>
+        <div class="header-title">Controle de Atendimentos</div>
+        <div class="header-sub">Mari · Fisioterapia Pediátrica</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('agenda')">📅 Agenda</button>
+      <button class="tab" onclick="switchTab('summary')">📊 Resumo</button>
+      <button class="tab" onclick="switchTab('patients')">👥 Pacientes</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div id="view-agenda"></div>
+  <div id="view-summary" style="display:none"></div>
+  <div id="view-patients" style="display:none"></div>
+</div>
+
+<div class="saving" id="saving-indicator" style="opacity:0">💾 Salvando...</div>
+
+<div class="modal-overlay" id="modal" style="display:none" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-patient" id="modal-patient"></div>
+    <div class="modal-date" id="modal-date"></div>
+    <div id="modal-options"></div>
+    <button class="btn-close" onclick="closeModal()">Fechar</button>
+  </div>
+</div>
+
+<script>
+const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const DAYS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+const STATUS = {
+  realizado:             { label:"Realizado",        color:"#4ade80", bg:"#052e16", icon:"✓" },
+  faltou:                { label:"Faltou",            color:"#f87171", bg:"#2d0a0a", icon:"✗" },
+  desmarcado_paciente:   { label:"Desmarcou",         color:"#fb923c", bg:"#2d1200", icon:"↩" },
+  desmarcado_eu:         { label:"Eu cancelei",       color:"#a78bfa", bg:"#1a0a2e", icon:"↪" },
+  agendado:              { label:"Agendado",          color:"#94a3b8", bg:"#0f172a", icon:"○" },
+};
+const COLORS = ["#60a5fa","#f472b6","#34d399","#fbbf24","#a78bfa","#fb923c","#2dd4bf","#f87171","#e879f9","#86efac"];
+
+let state = { patients: [], records: {} };
+let currentTab = "agenda";
+let selectedMonth = new Date().getMonth();
+let selectedYear = new Date().getFullYear();
+let selectedPatient = null;
+let modalContext = null;
+let saveTimer = null;
+let editingPatient = null;
+
+const todayStr = (() => {
+  const t = new Date();
+  return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+})();
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const r = await fetch("/api/data");
+    state = await r.json();
+    if (!state.patients) state.patients = [];
+    if (!state.records) state.records = {};
+  } catch(e) { console.error(e); }
+  renderAll();
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  const ind = document.getElementById("saving-indicator");
+  ind.style.opacity = "1";
+  saveTimer = setTimeout(async () => {
+    await fetch("/api/data", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(state) });
+    ind.style.opacity = "0";
+  }, 800);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const getKey = (date, pid) => `${date}_${pid}`;
+const fmtDate = (y, m, d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+const daysInMonth = (m, y) => new Date(y, m+1, 0).getDate();
+const firstDay = (m, y) => new Date(y, m, 1).getDay();
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  ["agenda","summary","patients"].forEach(t => {
+    document.getElementById(`view-${t}`).style.display = t === tab ? "" : "none";
+    document.querySelectorAll(".tab")[["agenda","summary","patients"].indexOf(t)].className = "tab" + (t === tab ? " active" : "");
+  });
+  renderAll();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderAll() {
+  if (currentTab === "agenda") renderAgenda();
+  if (currentTab === "summary") renderSummary();
+  if (currentTab === "patients") renderPatients();
+}
+
+function monthNavHTML() {
+  return `
+    <div class="month-nav">
+      <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+      <span class="month-label">${MONTHS[selectedMonth]} ${selectedYear}</span>
+      <button class="month-btn" onclick="changeMonth(1)">›</button>
+    </div>`;
+}
+
+function changeMonth(dir) {
+  selectedMonth += dir;
+  if (selectedMonth < 0) { selectedMonth = 11; selectedYear--; }
+  if (selectedMonth > 11) { selectedMonth = 0; selectedYear++; }
+  renderAll();
+}
+
+// ── Agenda ────────────────────────────────────────────────────────────────────
+function renderAgenda() {
+  const el = document.getElementById("view-agenda");
+  const patients = selectedPatient ? state.patients.filter(p => p.id === selectedPatient) : state.patients;
+  const days = daysInMonth(selectedMonth, selectedYear);
+  const fd = firstDay(selectedMonth, selectedYear);
+
+  let chipsHTML = `<div class="chips">
+    <button class="chip ${!selectedPatient ? 'all-active' : ''}" onclick="selectPatient(null)">Todos</button>
+    ${state.patients.map(p => `
+      <button class="chip" id="chip-${p.id}" onclick="selectPatient(${p.id})"
+        style="background:${selectedPatient===p.id ? p.color+'33' : '#1e293b'};
+               border-color:${selectedPatient===p.id ? p.color : '#334155'};
+               color:${selectedPatient===p.id ? p.color : '#94a3b8'}">
+        ${p.name.split(" ")[0]}
+      </button>`).join("")}
+  </div>`;
+
+  let calHTML = `<div class="day-headers">${DAYS.map(d => `<div class="day-header">${d}</div>`).join("")}</div>
+  <div class="calendar">
+    ${"<div></div>".repeat(fd)}
+    ${Array.from({length:days},(_,i) => {
+      const day = i+1;
+      const date = fmtDate(selectedYear, selectedMonth, day);
+      const isToday = date === todayStr;
+      const btns = patients.map(p => {
+        const st = state.records[getKey(date, p.id)];
+        const info = st ? STATUS[st] : null;
+        return `<button class="status-btn" onclick="openModal('${date}',${p.id})"
+          style="background:${info ? info.bg : '#1e293b'};
+                 border-color:${info ? info.color+'66' : '#334155'};
+                 border-left-color:${p.color};
+                 color:${info ? info.color : '#475569'}">
+          <span>${info ? info.icon : '·'}</span>
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:52px">${p.name.split(" ")[0]}</span>
+        </button>`;
+      }).join("");
+      return `<div class="day-cell${isToday?' today':''}">
+        <div class="day-num${isToday?' today-num':''}">${day}${isToday?'<span class="today-badge">hoje</span>':''}</div>
+        ${btns}
+      </div>`;
+    }).join("")}
+  </div>`;
+
+  let legendHTML = `<div class="legend">
+    ${Object.entries(STATUS).map(([,v]) => `
+      <div class="legend-item"><span style="color:${v.color};font-weight:700;font-size:14px">${v.icon}</span>${v.label}</div>
+    `).join("")}
+  </div>`;
+
+  el.innerHTML = monthNavHTML() + chipsHTML + calHTML + legendHTML;
+}
+
+function selectPatient(id) {
+  selectedPatient = id;
+  renderAgenda();
+}
+
+// ── Summary ───────────────────────────────────────────────────────────────────
+function renderSummary() {
+  const el = document.getElementById("view-summary");
+  if (!state.patients.length) { el.innerHTML = monthNavHTML() + `<p class="empty-msg" style="margin-top:40px">Nenhum paciente cadastrado ainda.</p>`; return; }
+
+  const cards = state.patients.map(p => {
+    const days = daysInMonth(selectedMonth, selectedYear);
+    const counts = { realizado:0, faltou:0, desmarcado_paciente:0, desmarcado_eu:0 };
+    const realizadoDays = [];
+    for (let d = 1; d <= days; d++) {
+      const date = fmtDate(selectedYear, selectedMonth, d);
+      const st = state.records[getKey(date, p.id)];
+      if (st && st in counts) {
+        counts[st]++;
+        if (st === "realizado") realizadoDays.push(d);
+      }
+    }
+    const total = Object.values(counts).reduce((a,b) => a+b, 0);
+    return `
+      <div class="summary-card" style="border-left:4px solid ${p.color}">
+        <div class="summary-header">
+          <div>
+            <div class="summary-name" style="color:${p.color}">${p.name}</div>
+            <div class="summary-period">${MONTHS[selectedMonth]} ${selectedYear}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="summary-count">${counts.realizado}</div>
+            <div class="summary-count-label">realizados</div>
+          </div>
+        </div>
+        <div class="summary-grid">
+          ${[["realizado","✓"],["faltou","✗"],["desmarcado_paciente","↩"],["desmarcado_eu","↪"]].map(([s,icon]) => `
+            <div class="summary-stat" style="background:${STATUS[s].bg};border:1px solid ${STATUS[s].color}33">
+              <div class="summary-stat-icon" style="color:${STATUS[s].color}">${icon}</div>
+              <div class="summary-stat-num" style="color:${STATUS[s].color}">${counts[s]}</div>
+              <div class="summary-stat-label">${STATUS[s].label}</div>
+            </div>`).join("")}
+        </div>
+        ${realizadoDays.length ? `
+          <div class="days-realizados">
+            <div class="days-realizados-title">📋 Dias realizados (para cobrança):</div>
+            <div>${realizadoDays.map(d => `<span class="day-badge">${String(d).padStart(2,'0')}/${String(selectedMonth+1).padStart(2,'0')}</span>`).join("")}</div>
+          </div>` : total === 0 ? `<p class="empty-msg">Nenhum registro neste mês</p>` : ""}
+      </div>`;
+  }).join("");
+
+  el.innerHTML = monthNavHTML() + cards;
+}
+
+// ── Patients ──────────────────────────────────────────────────────────────────
+function renderPatients() {
+  const el = document.getElementById("view-patients");
+  const list = state.patients.map(p => `
+    <div class="patient-row" style="border-left:4px solid ${p.color}">
+      ${editingPatient === p.id
+        ? `<input class="text-input" id="edit-input-${p.id}" value="${p.name}"
+            onblur="saveEdit(${p.id})" onkeydown="if(event.key==='Enter')saveEdit(${p.id})" style="flex:1"/>`
+        : `<span class="patient-name" style="color:${p.color}">${p.name}</span>`}
+      <div class="patient-actions">
+        <button class="btn-edit" onclick="startEdit(${p.id})">✏️ Editar</button>
+        <button class="btn-del" onclick="removePatient(${p.id})">🗑️</button>
+      </div>
+    </div>`).join("");
+
+  el.innerHTML = `
+    <div class="add-patient-box">
+      <div class="add-patient-title">+ Adicionar paciente</div>
+      <div class="add-patient-row">
+        <input class="text-input" id="new-patient-input" placeholder="Nome do paciente..." onkeydown="if(event.key==='Enter')addPatient()"/>
+        <button class="btn-primary" onclick="addPatient()">Adicionar</button>
+      </div>
+    </div>
+    ${list || '<p class="empty-msg" style="margin-top:20px">Nenhum paciente cadastrado.</p>'}`;
+
+  if (editingPatient !== null) {
+    const inp = document.getElementById(`edit-input-${editingPatient}`);
+    if (inp) { inp.focus(); inp.select(); }
+  }
+}
+
+function addPatient() {
+  const inp = document.getElementById("new-patient-input");
+  const name = inp ? inp.value.trim() : "";
+  if (!name) return;
+  const color = COLORS[state.patients.length % COLORS.length];
+  state.patients.push({ id: Date.now(), name, color });
+  scheduleSave();
+  renderPatients();
+}
+
+function removePatient(id) {
+  if (!confirm("Remover paciente e todos os registros?")) return;
+  state.patients = state.patients.filter(p => p.id !== id);
+  Object.keys(state.records).forEach(k => { if (k.endsWith(`_${id}`)) delete state.records[k]; });
+  scheduleSave();
+  renderPatients();
+}
+
+function startEdit(id) {
+  editingPatient = id;
+  renderPatients();
+}
+
+function saveEdit(id) {
+  const inp = document.getElementById(`edit-input-${id}`);
+  if (!inp) return;
+  const name = inp.value.trim();
+  if (name) state.patients = state.patients.map(p => p.id === id ? {...p, name} : p);
+  editingPatient = null;
+  scheduleSave();
+  renderPatients();
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(date, pid) {
+  modalContext = { date, pid };
+  const patient = state.patients.find(p => p.id === pid);
+  const current = state.records[getKey(date, pid)];
+  const [y, m, d] = date.split("-");
+  document.getElementById("modal-patient").textContent = patient?.name || "";
+  document.getElementById("modal-date").textContent = `${d}/${m}/${y}`;
+  document.getElementById("modal-options").innerHTML = `
+    ${Object.entries(STATUS).map(([key, val]) => `
+      <button class="status-opt${current===key?' current':''}" onclick="setStatus('${key}')"
+        style="background:${current===key ? val.bg : '#1e293b'};
+               border-color:${current===key ? val.color : '#334155'};
+               color:${current===key ? val.color : '#94a3b8'}">
+        <span class="status-opt-icon">${val.icon}</span>
+        <span>${val.label}</span>
+        ${current===key ? '<span class="current-badge">✓ atual</span>' : ''}
+      </button>`).join("")}
+    ${current ? `<button class="btn-clear" onclick="setStatus(null)">Limpar registro</button>` : ""}
+  `;
+  document.getElementById("modal").style.display = "flex";
+}
+
+function setStatus(status) {
+  if (!modalContext) return;
+  const key = getKey(modalContext.date, modalContext.pid);
+  if (status === null) delete state.records[key];
+  else state.records[key] = status;
+  scheduleSave();
+  closeModal();
+  renderAll();
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+  modalContext = null;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
