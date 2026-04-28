@@ -1,32 +1,42 @@
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
+const { MongoClient } = require("mongodb");
 
 const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
-const DATA_FILE = path.join(__dirname, "data.json");
+const client = new MongoClient(process.env.MONGODB_URI);
+let db;
 
-function loadData() {
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ patients: [], records: {} }));
+async function connect() {
+  await client.connect();
+  db = client.db("atendimentos");
+  console.log("MongoDB conectado!");
+}
+
+app.get("/api/data", async (req, res) => {
+  try {
+    const doc = await db.collection("dados").findOne({ _id: "mari" });
+    if (!doc) return res.json({ patients: [], records: {} });
+    const { _id, ...data } = doc;
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
-  return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
-}
-
-function saveData(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-}
-
-app.get("/api/data", (req, res) => {
-  res.json(loadData());
 });
 
-app.post("/api/data", (req, res) => {
-  saveData(req.body);
-  res.json({ ok: true });
+app.post("/api/data", async (req, res) => {
+  try {
+    await db.collection("dados").updateOne(
+      { _id: "mari" },
+      { $set: req.body },
+      { upsert: true }
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+connect().then(() => app.listen(PORT, () => console.log(`Rodando na porta ${PORT}`)));
